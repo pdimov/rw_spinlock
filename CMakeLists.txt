@@ -24,6 +24,8 @@ fetch_boost_library(smart_ptr)
 fetch_boost_library(move)
 fetch_boost_library(type_traits)
 
+set(CMAKE_CXX_STANDARD 11)
+
 include(CTest)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
