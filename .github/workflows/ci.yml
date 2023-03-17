@@ -20,12 +20,20 @@ jobs:
         include:
           - os: ubuntu-20.04
             variant: Debug
+          - os: ubuntu-20.04
+            variant: Release
           - os: ubuntu-22.04
             variant: Debug
+          - os: ubuntu-22.04
+            variant: Release
           - os: macos-11
             variant: Debug
+          - os: macos-11
+            variant: Release
           - os: macos-12
             variant: Debug
+          - os: macos-12
+            variant: Release
 
     runs-on: ${{matrix.os}}
 
