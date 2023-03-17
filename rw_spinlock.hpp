@@ -16,7 +16,11 @@ private:
 
     // bit 31: locked exclusive
     // bit 30: writer pending
-    // bit 29..: reader lock count
+    // bit 29..0: reader lock count
+
+    static constexpr std::uint32_t locked_exclusive_mask = 1u << 31; // 0x8000'0000
+    static constexpr std::uint32_t writer_pending_mask = 1u << 30; // 0x4000'0000
+    static constexpr std::uint32_t reader_lock_count_mask = writer_pending_mask - 1; // 0x3FFF'FFFF
 
     std::atomic<std::uint32_t> state_ = {};
 
@@ -31,7 +35,7 @@ public:
     {
         std::uint32_t st = state_.load( std::memory_order_relaxed );
 
-        if( st >= 0x3FFFFFFF )
+        if( st >= reader_lock_count_mask )
         {
             // either bit 31 set, bit 30 set, or reader count is max
             return false;
@@ -49,7 +53,7 @@ public:
             {
                 std::uint32_t st = state_.load( std::memory_order_relaxed );
 
-                if( st < 0x3FFFFFFF )
+                if( st < reader_lock_count_mask )
                 {
                     std::uint32_t newst = st + 1;
                     if( state_.compare_exchange_weak( st, newst, std::memory_order_acquire, std::memory_order_relaxed ) ) return;
@@ -76,19 +80,19 @@ public:
     {
         std::uint32_t st = state_.load( std::memory_order_relaxed );
 
-        if( st & 0x80000000 )
+        if( st & locked_exclusive_mask )
         {
             // locked exclusive
             return false;
         }
 
-        if( st & 0x3FFFFFFF )
+        if( st & reader_lock_count_mask )
         {
             // locked shared
             return false;
         }
 
-        std::uint32_t newst = 0x80000000;
+        std::uint32_t newst = locked_exclusive_mask;
         return state_.compare_exchange_strong( st, newst, std::memory_order_acquire, std::memory_order_relaxed );
     }
 
@@ -100,18 +104,18 @@ public:
             {
                 std::uint32_t st = state_.load( std::memory_order_relaxed );
 
-                if( st & 0x80000000 )
+                if( st & locked_exclusive_mask )
                 {
                     // locked exclusive, spin
                 }
-                else if( ( st & 0x3FFFFFFF ) == 0 )
+                else if( ( st & reader_lock_count_mask ) == 0 )
                 {
                     // not locked exclusive, not locked shared, try to lock
 
-                    std::uint32_t newst = 0x80000000;
+                    std::uint32_t newst = locked_exclusive_mask;
                     if( state_.compare_exchange_weak( st, newst, std::memory_order_acquire, std::memory_order_relaxed ) ) return;
                 }
-                else if( st & 0x40000000 )
+                else if( st & writer_pending_mask )
                 {
                     // writer pending bit already set, nothing to do
                 }
@@ -119,7 +123,7 @@ public:
                 {
                     // locked shared, set writer pending bit
 
-                    std::uint32_t newst = st | 0x40000000;
+                    std::uint32_t newst = st | writer_pending_mask;
                     state_.compare_exchange_weak( st, newst, std::memory_order_relaxed, std::memory_order_relaxed );
                 }
 
@@ -133,19 +137,19 @@ public:
 
                 for( ;; )
                 {
-                    if( st & 0x80000000 )
+                    if( st & locked_exclusive_mask )
                     {
                         // locked exclusive, nothing to do
                         break;
                     }
-                    else if( ( st & 0x3FFFFFFF ) == 0 )
+                    else if( ( st & reader_lock_count_mask ) == 0 )
                     {
                         // lock free, try to take it
 
-                        std::uint32_t newst = 0x80000000;
+                        std::uint32_t newst = locked_exclusive_mask;
                         if( state_.compare_exchange_weak( st, newst, std::memory_order_acquire, std::memory_order_relaxed ) ) return;
                     }
-                    else if( ( st & 0x40000000 ) == 0 )
+                    else if( ( st & writer_pending_mask ) == 0 )
                     {
                         // writer pending bit already clear, nothing to do
                         break;
@@ -154,7 +158,7 @@ public:
                     {
                         // clear writer pending bit
 
-                        std::uint32_t newst = st & ~0x40000000u;
+                        std::uint32_t newst = st & ~writer_pending_mask;
                         if( state_.compare_exchange_weak( st, newst, std::memory_order_relaxed, std::memory_order_relaxed ) ) break;
                     }
                 }
