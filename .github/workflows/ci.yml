@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - develop
+      - feature/**
+
+env:
+  UBSAN_OPTIONS: print_stacktrace=1
+
+jobs:
+
+  posix-cmake-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            variant: debug
+          - os: ubuntu-22.04
+            variant: debug
+          - os: macos-11
+            variant: debug
+          - os: macos-12
+            variant: debug
+
+    runs-on: ${{matrix.os}}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install packages
+        if: matrix.install
+        run: sudo apt-get -y install ${{matrix.install}}
+
+      - name: Configure
+        run: |
+          mkdir __build__ && cd __build__
+          cmake -DCMAKE_BUILD_TYPE=${{matrix.variant}} ..
+
+      - name: Build tests
+        run: |
+          cmake --build __build__
+
+      - name: Run tests
+        run: |
+          ctest __build__ --output-on-failure --no-tests=error
+
+  windows-cmake-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2019
+          - os: windows-2022
+
+    runs-on: ${{matrix.os}}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure
+        shell: cmd
+        run: |
+          mkdir __build__ && cd __build__
+          cmake ..
+
+      - name: Build tests (Debug)
+        shell: cmd
+        run: |
+          cmake --build __build__ --config Debug
+
+      - name: Run tests (Debug)
+        shell: cmd
+        run: |
+          ctest __build__ --output-on-failure --no-tests=error -C Debug
+
+      - name: Build tests (Release)
+        shell: cmd
+        run: |
+          cmake --build __build__ --config Release
+
+      - name: Run tests (Release)
+        shell: cmd
+        run: |
+          ctest __build__ --output-on-failure --no-tests=error -C Release
