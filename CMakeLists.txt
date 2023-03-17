@@ -26,7 +26,10 @@ fetch_boost_library(type_traits)
 
 include(CTest)
 
-link_libraries(Boost::smart_ptr Boost::core)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads)
+
+link_libraries(Boost::smart_ptr Boost::core Threads::Threads)
 
 add_executable(rw_spinlock_test rw_spinlock_test.cpp)
 add_test(rw_spinlock_test rw_spinlock_test)
