@@ -19,13 +19,13 @@ jobs:
       matrix:
         include:
           - os: ubuntu-20.04
-            variant: debug
+            variant: Debug
           - os: ubuntu-22.04
-            variant: debug
+            variant: Debug
           - os: macos-11
-            variant: debug
+            variant: Debug
           - os: macos-12
-            variant: debug
+            variant: Debug
 
     runs-on: ${{matrix.os}}
 
