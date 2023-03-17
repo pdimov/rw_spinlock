@@ -111,7 +111,7 @@ public:
                     std::uint32_t newst = 0x8000'0000;
                     if( state_.compare_exchange_weak( st, newst, std::memory_order_acquire, std::memory_order_relaxed ) ) return;
                 }
-                else if( st & 0x4000'000 )
+                else if( st & 0x4000'0000 )
                 {
                     // writer pending bit already set, nothing to do
                 }
