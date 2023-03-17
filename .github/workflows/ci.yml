@@ -47,7 +47,7 @@ jobs:
 
       - name: Run tests
         run: |
-          ctest __build__ --output-on-failure --no-tests=error
+          ctest --test-dir __build__ --output-on-failure --no-tests=error
 
   windows-cmake-test:
     strategy:
@@ -76,7 +76,7 @@ jobs:
       - name: Run tests (Debug)
         shell: cmd
         run: |
-          ctest __build__ --output-on-failure --no-tests=error -C Debug
+          ctest --test-dir __build__ --output-on-failure --no-tests=error -C Debug
 
       - name: Build tests (Release)
         shell: cmd
@@ -86,4 +86,4 @@ jobs:
       - name: Run tests (Release)
         shell: cmd
         run: |
-          ctest __build__ --output-on-failure --no-tests=error -C Release
+          ctest --test-dir __build__ --output-on-failure --no-tests=error -C Release
