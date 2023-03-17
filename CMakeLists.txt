@@ -24,14 +24,14 @@ fetch_boost_library(smart_ptr)
 fetch_boost_library(move)
 fetch_boost_library(type_traits)
 
-set(CMAKE_CXX_STANDARD 11)
-
 include(CTest)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads)
 
 link_libraries(Boost::smart_ptr Boost::core Threads::Threads)
+
+set(CMAKE_CXX_STANDARD 11)
 
 add_executable(rw_spinlock_test rw_spinlock_test.cpp)
 add_test(rw_spinlock_test rw_spinlock_test)
@@ -41,3 +41,11 @@ add_test(rw_spinlock_test2 rw_spinlock_test2)
 
 add_executable(rw_spinlock_test3 rw_spinlock_test3.cpp)
 add_test(rw_spinlock_test3 rw_spinlock_test3)
+
+set(CMAKE_CXX_STANDARD 14)
+
+add_executable(rw_spinlock_test4 rw_spinlock_test4.cpp)
+add_test(rw_spinlock_test4 rw_spinlock_test4)
+
+add_executable(rw_spinlock_test5 rw_spinlock_test5.cpp)
+add_test(rw_spinlock_test5 rw_spinlock_test5)
