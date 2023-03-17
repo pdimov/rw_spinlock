@@ -31,21 +31,22 @@ find_package(Threads)
 
 link_libraries(Boost::smart_ptr Boost::core Threads::Threads)
 
+function(rws_add_test name)
+
+  add_executable(${name} ${name}.cpp)
+  add_test(${name} ${name})
+
+endfunction()
+
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(rw_spinlock_test rw_spinlock_test.cpp)
-add_test(rw_spinlock_test rw_spinlock_test)
-
-add_executable(rw_spinlock_test2 rw_spinlock_test2.cpp)
-add_test(rw_spinlock_test2 rw_spinlock_test2)
-
-add_executable(rw_spinlock_test3 rw_spinlock_test3.cpp)
-add_test(rw_spinlock_test3 rw_spinlock_test3)
+rws_add_test(rw_spinlock_test)
+rws_add_test(rw_spinlock_test2)
+rws_add_test(rw_spinlock_test3)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(rw_spinlock_test4 rw_spinlock_test4.cpp)
-add_test(rw_spinlock_test4 rw_spinlock_test4)
-
-add_executable(rw_spinlock_test5 rw_spinlock_test5.cpp)
-add_test(rw_spinlock_test5 rw_spinlock_test5)
+rws_add_test(rw_spinlock_test4)
+rws_add_test(rw_spinlock_test5)
+rws_add_test(rw_spinlock_test6)
+rws_add_test(rw_spinlock_test7)
